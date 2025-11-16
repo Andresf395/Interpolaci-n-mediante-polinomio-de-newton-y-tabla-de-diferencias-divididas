@@ -2,20 +2,22 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
-#include <cstdlib>  // Para system("pause")
-#include <cmath>    // Para abs()
+#include <cmath>  
 using namespace std;
 
+// Usamos long double para mayor precisión
+typedef long double ldouble;
+
 // Calcular la tabla de diferencias divididas
-vector<double> diferenciasDivididas(const vector<double>& x, const vector<double>& y) {
+vector<ldouble> diferenciasDivididas(const vector<ldouble>& x, const vector<ldouble>& y) {
     int n = x.size();
-    vector<vector<double>> tabla(n, vector<double>(n));
+    vector<vector<ldouble>> tabla(n, vector<ldouble>(n));
 
     // Primera columna: valores de y
     for (int i = 0; i < n; ++i)
         tabla[i][0] = y[i];
 
-    // Cálculo de diferencias divididas, la tablita 
+    // Cálculo de diferencias divididas
     for (int j = 1; j < n; ++j) {
         for (int i = 0; i < n - j; ++i) {
             tabla[i][j] = (tabla[i + 1][j - 1] - tabla[i][j - 1]) / (x[i + j] - x[i]);
@@ -23,45 +25,40 @@ vector<double> diferenciasDivididas(const vector<double>& x, const vector<double
     }
 
     // Extraer coeficientes
-    vector<double> coef(n);
+    vector<ldouble> coef(n);
     for (int i = 0; i < n; ++i)
         coef[i] = tabla[0][i];
 
     return coef;
 }
 
-// Función para construir el polinomio en si, osea mostrarlo forma algebraica
-string construirPolinomio(const vector<double>& x, const vector<double>& coef) {
+// Construir el polinomio en forma simbólica (Newton)
+string construirPolinomio(const vector<ldouble>& x, const vector<ldouble>& coef) {
     stringstream poly;
+    poly << fixed << setprecision(10); // ajusta la precisión mostrada
+
     poly << "P(x) = ";
 
     for (int i = 0; i < coef.size(); ++i) {
-        // Mostrar signo
-        if (i > 0 && coef[i] >= 0)
-            poly << " + ";
-        else if (coef[i] < 0)
-            poly << " - ";
+        if (i > 0) {
+            poly << (coef[i] >= 0 ? " + " : " - ");
+            poly << abs(coef[i]);
+        } else {
+            poly << coef[i];
+        }
 
-        // Valor absoluto del coeficiente
-        poly << abs(coef[i]);
-
-        // Factores (x - x_j)
         for (int j = 0; j < i; ++j) {
-            poly << "(x";
-            if (x[j] >= 0)
-                poly << " - " << x[j] << ")";
-            else
-                poly << " + " << -x[j] << ")";
+            poly << "(x - " << x[j] << ")";
         }
     }
 
     return poly.str();
 }
 
-//Función que evalua el newton, similar a la tabla pero de manera indirecta
-double evaluarNewton(const vector<double>& x, const vector<double>& coef, double x_val) {
-    double resultado = coef[0];
-    double producto = 1.0;
+// Evaluar el polinomio de Newton en un punto x_val
+ldouble evaluarNewton(const vector<ldouble>& x, const vector<ldouble>& coef, ldouble x_val) {
+    ldouble resultado = coef[0];
+    ldouble producto = 1.0;
 
     for (int i = 1; i < x.size(); ++i) {
         producto *= (x_val - x[i - 1]);
@@ -71,13 +68,12 @@ double evaluarNewton(const vector<double>& x, const vector<double>& coef, double
     return resultado;
 }
 
-//Función core
 int main() {
     int n;
     cout << "Ingrese el numero de puntos: ";
     cin >> n;
 
-    vector<double> x(n), y(n);
+    vector<ldouble> x(n), y(n);
     cout << "Ingrese los valores de x:\n";
     for (int i = 0; i < n; ++i)
         cin >> x[i];
@@ -86,35 +82,35 @@ int main() {
     for (int i = 0; i < n; ++i)
         cin >> y[i];
 
-    // Calcular coeficientes del polinomio de Newton
-    vector<double> coef = diferenciasDivididas(x, y);
+    // Calculamos los coeficientes
+    vector<ldouble> coef = diferenciasDivididas(x, y);
 
-    // Mostrar coeficientes
+    cout << fixed << setprecision(15);  // Mostrar decimales largos
+
     cout << "\nCoeficientes del polinomio de Newton:\n";
     for (int i = 0; i < n; ++i)
         cout << "a" << i << " = " << coef[i] << endl;
 
-    // Mostrar polinomio simbólico
     cout << "\nForma simbólica del polinomio:\n";
     cout << construirPolinomio(x, coef) << endl;
 
-    // Para interpolar valores en el rango
     char opcion;
     do {
-        double x_val;
         cout << "\n¿Desea interpolar un nuevo valor de x? (s/n): ";
         cin >> opcion;
 
         if (opcion == 's' || opcion == 'S') {
+            ldouble x_val;
             cout << "Ingrese el valor de x a evaluar: ";
             cin >> x_val;
-            double resultado = evaluarNewton(x, coef, x_val);
+            ldouble resultado = evaluarNewton(x, coef, x_val);
             cout << "P(" << x_val << ") = " << resultado << endl;
         }
 
     } while (opcion == 's' || opcion == 'S');
 
     cout << "\nPrograma finalizado." << endl;
-    system("pause");
+    system ("pause");
     return 0;
+    
 }
