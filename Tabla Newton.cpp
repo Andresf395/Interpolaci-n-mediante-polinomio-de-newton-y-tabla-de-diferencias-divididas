@@ -4,6 +4,7 @@
 #include <cstdlib>
 using namespace std;
 
+//Código REalizado por Andrés Rodríguez
 // Función que calcula las diferencias divididas
 vector<double> diferenciasDivididas(const vector<double>& x, const vector<double>& y) {
     int n = x.size();

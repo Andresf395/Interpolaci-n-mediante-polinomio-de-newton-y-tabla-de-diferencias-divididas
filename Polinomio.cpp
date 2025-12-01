@@ -6,6 +6,7 @@
 #include <cmath>    // Para abs()
 using namespace std;
 
+//Código REalizado por Andrés Rodríguez
 // Calcular la tabla de diferencias divididas
 vector<double> diferenciasDivididas(const vector<double>& x, const vector<double>& y) {
     int n = x.size();
